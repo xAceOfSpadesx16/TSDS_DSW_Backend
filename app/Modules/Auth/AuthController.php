@@ -62,6 +62,31 @@ class AuthController extends Controller
     }
 
     /**
+     * POST /api/auth/refresh
+     *
+     * Fuera de `auth:api`: acepta un token vencido dentro de la ventana
+     * `refresh_ttl`. Responde con la misma forma que login.
+     */
+    public function refresh(): JsonResponse
+    {
+        try {
+            $payload = $this->auth->refresh();
+        } catch (JWTException $e) {
+            return response()->json([
+                'message' => 'Token inválido o expirado.',
+            ], 401);
+        }
+
+        if ($payload === null) {
+            return response()->json([
+                'message' => 'Token inválido o expirado.',
+            ], 401);
+        }
+
+        return response()->json($payload);
+    }
+
+    /**
      * POST /api/auth/logout (auth:api)
      */
     public function logout(): JsonResponse

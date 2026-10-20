@@ -42,13 +42,18 @@ Route::get('/health', function (): JsonResponse {
 | Módulo Auth
 |--------------------------------------------------------------------------
 |
-| Rutas públicas (registro y login) y protegidas (logout, me).
+| Rutas públicas (registro, login y refresh) y protegidas (logout, me).
 | La guardia `api` usa JWT (ver config/auth.php).
+|
+| `refresh` queda FUERA de `auth:api` a propósito: tiene que aceptar un token
+| ya vencido dentro de la ventana `refresh_ttl` (14 días por defecto), que es
+| justamente lo que `auth:api` rechaza.
 |
 */
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
 
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -66,13 +71,18 @@ Route::prefix('auth')->group(function () {
 | desde el cuerpo de la petición (se descarta en CreateRequest).
 |
 | Convención de paths del plan:
-|   POST /api/history    → store
-|   GET  /api/histories  → index
+|   POST   /api/history     → store
+|   GET    /api/histories   → index
+|   DELETE /api/history/{id} → destroy (whereUuid: un id no-uuid da 404)
+|   DELETE /api/histories   → clear
 |
 */
 Route::middleware('auth:api')->group(function () {
     Route::post('/history', [HistoryController::class, 'store']);
     Route::get('/histories', [HistoryController::class, 'index']);
+    Route::delete('/history/{id}', [HistoryController::class, 'destroy'])
+        ->whereUuid('id');
+    Route::delete('/histories', [HistoryController::class, 'clear']);
 });
 
 /*

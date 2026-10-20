@@ -20,17 +20,26 @@ return [
     // por lo que no necesitamos exponer /sanctum/csrf-cookie.
     'paths' => ['api/*'],
 
-    // Métodos permitidos para esta API. La API solo expone GET y POST.
-    'allowed_methods' => ['GET', 'POST', 'OPTIONS'],
+    // Métodos permitidos para esta API. DELETE cubre el borrado de
+    // historial (DELETE /api/history/{id} y DELETE /api/histories).
+    'allowed_methods' => ['GET', 'POST', 'DELETE', 'OPTIONS'],
 
     // Orígenes habilitados.
-    // - localhost:5173  → dev server de Vite (SPA React).
-    // - 127.0.0.1:5173  → mismo servidor accedido por IP literal.
-    // Ampliar acá cuando se sumen más orígenes en producción/desarrollo.
-    'allowed_origins' => [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ],
+    // - Por defecto: los dos del dev server de Vite (SPA React).
+    // - En producción o con más entornos, se sobreescribe la variable
+    //   `CORS_ALLOWED_ORIGINS` con una lista separada por comas.
+    //
+    //   CORS_ALLOWED_ORIGINS=https://app.example.com,https://www.example.com
+    //
+    // Se parsea en runtime (no con `env()` directo en un array) para poder
+    // reescribir el origen del front sin editar este archivo.
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env(
+            'CORS_ALLOWED_ORIGINS',
+            'http://localhost:5173,http://127.0.0.1:5173'
+        ))
+    ))),
 
     'allowed_origins_patterns' => [],
 

@@ -58,6 +58,41 @@ class AuthService
     }
 
     /**
+     * Renueva el token actual dentro de la ventana `refresh_ttl`.
+     *
+     * A diferencia de `login()`, no usa `attempt()`: el token puede venir ya
+     * vencido y lo que importa es que siga dentro de la ventana de refresh.
+     * El token viejo queda en la blacklist (si está activa) porque
+     * `refresh()` lo invalida por dentro.
+     *
+     * @return array{user: User, token: string, token_type: string, expires_in: int}|null
+     *         `null` cuando no hay token, no es válido, o venció fuera de la
+     *         ventana de refresh.
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    public function refresh(): ?array
+    {
+        $token = JWTAuth::getToken();
+
+        if (! $token) {
+            return null;
+        }
+
+        $newToken = JWTAuth::refresh();
+
+        // Tras `refresh()` el guard no queda autenticado: se resuelve el
+        // usuario a partir del token nuevo, que ya es válido.
+        $user = Auth::guard('api')->setToken($newToken)->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        return $this->respondWithToken($newToken, $user);
+    }
+
+    /**
      * Invalida el token actual (logout real).
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException

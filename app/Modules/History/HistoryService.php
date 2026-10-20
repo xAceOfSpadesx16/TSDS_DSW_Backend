@@ -64,4 +64,33 @@ class HistoryService
             ->orderByDesc('created_at')
             ->paginate($perPage);
     }
+
+    /**
+     * Borra un registro del historial del usuario.
+     *
+     * El filtro por `user_id` es la condición de seguridad: sin él un
+     * usuario podría borrar el historial de otro.
+     *
+     * @return bool `true` si borró una fila, `false` si no existía o
+     *              era de otro usuario. No se distinguen los dos casos
+     *              para no revelar la existencia de registros ajenos.
+     */
+    public function deleteForUser(User $user, string $id): bool
+    {
+        return HistoryRecord::query()
+            ->whereKey($id)
+            ->where('user_id', $user->getKey())
+            ->delete() > 0;
+    }
+
+    /**
+     * Borra todos los registros del historial del usuario. Los de otros
+     * usuarios quedan intactos por el filtro por `user_id`.
+     */
+    public function clearForUser(User $user): void
+    {
+        HistoryRecord::query()
+            ->where('user_id', $user->getKey())
+            ->delete();
+    }
 }

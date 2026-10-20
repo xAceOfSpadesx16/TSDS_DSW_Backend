@@ -8,6 +8,7 @@ use App\Modules\History\Requests\CreateRequest;
 use App\Modules\History\Resources\HistoryRecordResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Controlador delgado del historial.
@@ -57,6 +58,41 @@ class HistoryController extends Controller
                 'total' => $page->total(),
             ],
         ]);
+    }
+
+    /**
+     * DELETE /api/history/{id}  (auth:api)
+     *
+     * Responde 204 si borró el registro y 404 si no existe o pertenece a
+     * otro usuario (ver {@see HistoryService::deleteForUser}).
+     */
+    public function destroy(Request $request, string $id): JsonResponse|Response
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if (! $this->history->deleteForUser($user, $id)) {
+            return response()->json([
+                'message' => 'Registro no encontrado.',
+            ], 404);
+        }
+
+        return response()->noContent();
+    }
+
+    /**
+     * DELETE /api/histories  (auth:api)
+     *
+     * Borra todos los registros del usuario autenticado.
+     */
+    public function clear(Request $request): Response
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $this->history->clearForUser($user);
+
+        return response()->noContent();
     }
 
     /**
