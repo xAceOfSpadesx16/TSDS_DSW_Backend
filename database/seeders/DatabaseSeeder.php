@@ -9,6 +9,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
+/** Siembra usuarios y datos de demostración. */
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;

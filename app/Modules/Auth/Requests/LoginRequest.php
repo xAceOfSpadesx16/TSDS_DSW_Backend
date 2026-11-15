@@ -14,6 +14,8 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Reglas del login.
+     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array

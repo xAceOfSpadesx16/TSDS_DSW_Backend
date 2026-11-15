@@ -10,6 +10,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 /** Persistencia y validación del historial por usuario. */
 class HistoryService
 {
+    /** Inyecta el servicio de historial. */
     public function __construct(
         private readonly HistoryStrategyFactory $strategies,
     ) {

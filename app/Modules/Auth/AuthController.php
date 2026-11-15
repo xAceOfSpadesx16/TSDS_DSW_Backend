@@ -11,6 +11,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 /** Endpoints de autenticación; la lógica vive en {@see AuthService}. */
 class AuthController extends Controller
 {
+    /** Inyecta las dependencias del controlador. */
     public function __construct(private readonly AuthService $auth)
     {
     }

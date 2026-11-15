@@ -14,6 +14,8 @@ class CreateRequest extends FormRequest
     }
 
     /**
+     * Reglas del alta de historial.
+     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array

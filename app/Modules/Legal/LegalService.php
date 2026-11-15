@@ -6,6 +6,8 @@ namespace App\Modules\Legal;
 class LegalService
 {
     /**
+     * Aviso legal del producto.
+     *
      * @return array{title: string, version: string, sections: array<int, array{heading: string, body: string}>}
      */
     public function disclaimer(): array

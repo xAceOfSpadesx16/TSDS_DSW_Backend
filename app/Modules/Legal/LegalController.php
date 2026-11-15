@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 /** Endpoint del aviso legal; el texto vive en {@see LegalService}. */
 class LegalController extends Controller
 {
+    /** Inyecta las dependencias del controlador. */
     public function __construct(private readonly LegalService $legal)
     {
     }

@@ -49,6 +49,8 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
+     * Claims extra del JWT (vacíos por defecto).
+     *
      * @return array<string, mixed>
      */
     public function getJWTCustomClaims(): array

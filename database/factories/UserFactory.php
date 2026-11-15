@@ -18,6 +18,8 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * Estado por defecto del usuario.
+     *
      * @return array<string, mixed>
      */
     public function definition(): array

@@ -13,6 +13,7 @@ use Illuminate\Http\Response;
 /** Endpoints del historial; la lógica vive en {@see HistoryService}. */
 class HistoryController extends Controller
 {
+    /** Inyecta las dependencias del controlador. */
     public function __construct(private readonly HistoryService $history)
     {
     }

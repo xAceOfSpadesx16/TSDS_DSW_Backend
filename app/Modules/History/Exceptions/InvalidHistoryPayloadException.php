@@ -8,6 +8,8 @@ use RuntimeException;
 class InvalidHistoryPayloadException extends RuntimeException
 {
     /**
+     * Guarda los errores por campo y el mensaje.
+     *
      * @param  array<string, array<int, string>>  $errors
      */
     public function __construct(
@@ -18,6 +20,8 @@ class InvalidHistoryPayloadException extends RuntimeException
     }
 
     /**
+     * Errores por campo.
+     *
      * @return array<string, array<int, string>>
      */
     public function errors(): array

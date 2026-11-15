@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class HistoryRecordResource extends JsonResource
 {
     /**
+     * Serializa el registro.
+     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array

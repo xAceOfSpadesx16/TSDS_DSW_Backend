@@ -19,6 +19,8 @@ class HistoryStrategyFactory
     ];
 
     /**
+     * Resuelve la estrategia del módulo.
+     *
      * @throws UnsupportedModuleException
      */
     public function make(string $moduleName): HistoryStrategyInterface
@@ -34,6 +36,8 @@ class HistoryStrategyFactory
     }
 
     /**
+     * Módulos soportados.
+     *
      * @return array<int, string>
      */
     public function supportedModules(): array

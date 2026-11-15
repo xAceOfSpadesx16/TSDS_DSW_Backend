@@ -14,6 +14,8 @@ class RegisterRequest extends FormRequest
     }
 
     /**
+     * Reglas del registro.
+     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array
