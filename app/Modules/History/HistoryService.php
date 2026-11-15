@@ -7,17 +7,7 @@ use App\Modules\History\Models\HistoryRecord;
 use App\Modules\History\Strategies\HistoryStrategyFactory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-/**
- * Servicio de persistencia del historial.
- *
- * Encapsula toda la lógica de acceso a HistoryRecord para que el
- * controlador sea una capa delgada. Centraliza:
- *   - la asociación entre el registro y el usuario autenticado (JWT),
- *   - la validación semántica del payload/result según el módulo
- *     (delegada a la estrategia resuelta por {@see HistoryStrategyFactory}),
- *   - el filtrado por dueño (un usuario nunca ve historiales ajenos),
- *   - la paginación.
- */
+/** Persistencia y validación del historial por usuario. */
 class HistoryService
 {
     public function __construct(
@@ -26,17 +16,12 @@ class HistoryService
     }
 
     /**
-     * Registra una nueva entrada de historial.
-     *
-     * Flujo:
-     *   1. Resuelve la estrategia de validación según `module_name`.
-     *   2. La estrategia valida la estructura de `payload` y `result`.
-     *      Si falla, lanza InvalidHistoryPayloadException (→ 422).
-     *   3. Persiste el registro asociándolo al usuario autenticado.
+     * Valida y persiste un registro para el usuario.
      *
      * @param  array{module_name: string, action: string, payload: array, result: array}  $data
-     *         Datos ya validados por el FormRequest. NO incluye user_id:
-     *         se inyecta server-side desde el usuario autenticado.
+     *
+     * @throws \App\Modules\History\Exceptions\InvalidHistoryPayloadException
+     * @throws \App\Modules\History\Exceptions\UnsupportedModuleException
      */
     public function store(User $user, array $data): HistoryRecord
     {
@@ -53,10 +38,7 @@ class HistoryService
         ]);
     }
 
-    /**
-     * Lista paginada del historial del usuario autenticado, ordenado
-     * descendente por creación (lo más reciente primero).
-     */
+    /** Lista el historial del usuario, del más reciente al más viejo. */
     public function paginateForUser(User $user, int $perPage = 20): LengthAwarePaginator
     {
         return HistoryRecord::query()
@@ -65,16 +47,7 @@ class HistoryService
             ->paginate($perPage);
     }
 
-    /**
-     * Borra un registro del historial del usuario.
-     *
-     * El filtro por `user_id` es la condición de seguridad: sin él un
-     * usuario podría borrar el historial de otro.
-     *
-     * @return bool `true` si borró una fila, `false` si no existía o
-     *              era de otro usuario. No se distinguen los dos casos
-     *              para no revelar la existencia de registros ajenos.
-     */
+    /** Borra un registro propio; `false` si no existe o es de otro usuario. */
     public function deleteForUser(User $user, string $id): bool
     {
         return HistoryRecord::query()
@@ -83,10 +56,7 @@ class HistoryService
             ->delete() > 0;
     }
 
-    /**
-     * Borra todos los registros del historial del usuario. Los de otros
-     * usuarios quedan intactos por el filtro por `user_id`.
-     */
+    /** Borra todo el historial del usuario. */
     public function clearForUser(User $user): void
     {
         HistoryRecord::query()

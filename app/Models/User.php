@@ -8,14 +8,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+/** Usuario autenticable con JWT. */
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * Atributos asignables en masa (registro y updates).
-     *
      * @var list<string>
      */
     protected $fillable = [
@@ -25,8 +24,6 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * Atributos ocultos al serializar (no se exponen por la API).
-     *
      * @var list<string>
      */
     protected $hidden = [
@@ -35,8 +32,6 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -47,20 +42,13 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    /**
-     * Identificador único del sujeto dentro del JWT.
-     * Tymon usa este valor como claim `sub` del token.
-     */
+    /** Identificador del sujeto en el claim `sub`. */
     public function getJWTIdentifier(): mixed
     {
         return $this->getKey();
     }
 
     /**
-     * Claims extra que se inyectan en el payload del JWT.
-     * Se devuelven vacíos por defecto; el consumidor puede enriquecerlos
-     * (roles, scopes, etc.) según la política de autorización.
-     *
      * @return array<string, mixed>
      */
     public function getJWTCustomClaims(): array

@@ -2,22 +2,10 @@
 
 namespace App\Modules\Legal;
 
-/**
- * Servicio de textos legales/regulatorios.
- *
- * Los disclaimers son datos estáticos por ahora: vivir en una clase
- * permite evolucionar a persistencia DB o i18n sin tocar el controlador.
- */
+/** Textos legales estáticos del producto. */
 class LegalService
 {
     /**
-     * Disclaimer principal del producto.
-     *
-     * Aclara que:
-     *   - los sorteos son recreativos (sin valor monetario/contractual),
-     *   - la aleatoriedad se calcula en el frontend,
-     *   - el backend no audita justicia criptográfica de los resultados.
-     *
      * @return array{title: string, version: string, sections: array<int, array{heading: string, body: string}>}
      */
     public function disclaimer(): array

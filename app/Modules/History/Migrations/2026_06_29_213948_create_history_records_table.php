@@ -6,15 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Convención de IDs:
-     *   - id: UUID v4 generado por Eloquent vía HasUuids.
-     *   - user_id: unsignedBigInteger nullable para permitir historiales
-     *     de invitados y conservar la fila si el usuario se elimina
-     *     (onDelete set null).
-     */
+    /** Aplica la migración. */
     public function up(): void
     {
         Schema::create('history_records', function (Blueprint $table) {
@@ -33,9 +25,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    /** Revierte la migración. */
     public function down(): void
     {
         Schema::dropIfExists('history_records');

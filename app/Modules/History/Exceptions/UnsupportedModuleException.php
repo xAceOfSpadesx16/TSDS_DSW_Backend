@@ -4,19 +4,10 @@ namespace App\Modules\History\Exceptions;
 
 use RuntimeException;
 
-/**
- * Lanzada por HistoryStrategyFactory cuando el `module_name` enviado
- * por el cliente no tiene una estrategia registrada en el factory.
- *
- * Se mapea a HTTP 422 en bootstrap/app.php: aunque la raíz es un
- * discriminador desconocido, semánticamente sigue siendo "input no
- * procesable por el backend" (consistente con el resto de errores 422).
- */
+/** El `module_name` recibido no tiene estrategia registrada. */
 class UnsupportedModuleException extends RuntimeException
 {
-    /**
-     * @param  string  $moduleName  Valor de `module_name` recibido.
-     */
+    /** Crea la excepción para el módulo recibido. */
     public static function forModule(string $moduleName): self
     {
         return new self(sprintf(

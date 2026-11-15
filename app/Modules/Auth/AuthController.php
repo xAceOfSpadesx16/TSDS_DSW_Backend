@@ -8,24 +8,14 @@ use App\Modules\Auth\Requests\RegisterRequest;
 use Illuminate\Http\JsonResponse;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
-/**
- * Controlador delgado de autenticación.
- *
- * Toda la lógica de negocio vive en {@see AuthService}. Este
- * controlador solo:
- *   1) recibe la request validada por FormRequest,
- *   2) delega al servicio,
- *   3) traduce el resultado a una respuesta HTTP JSON.
- */
+/** Endpoints de autenticación; la lógica vive en {@see AuthService}. */
 class AuthController extends Controller
 {
     public function __construct(private readonly AuthService $auth)
     {
     }
 
-    /**
-     * POST /api/auth/register
-     */
+    /** POST /api/auth/register. */
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
@@ -39,9 +29,7 @@ class AuthController extends Controller
         return response()->json($payload, 201);
     }
 
-    /**
-     * POST /api/auth/login
-     */
+    /** POST /api/auth/login. */
     public function login(LoginRequest $request): JsonResponse
     {
         try {
@@ -61,12 +49,7 @@ class AuthController extends Controller
         return response()->json($payload);
     }
 
-    /**
-     * POST /api/auth/refresh
-     *
-     * Fuera de `auth:api`: acepta un token vencido dentro de la ventana
-     * `refresh_ttl`. Responde con la misma forma que login.
-     */
+    /** POST /api/auth/refresh, fuera de `auth:api`. */
     public function refresh(): JsonResponse
     {
         try {
@@ -86,9 +69,7 @@ class AuthController extends Controller
         return response()->json($payload);
     }
 
-    /**
-     * POST /api/auth/logout (auth:api)
-     */
+    /** POST /api/auth/logout. */
     public function logout(): JsonResponse
     {
         try {
@@ -104,9 +85,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/auth/me (auth:api)
-     */
+    /** GET /api/auth/me. */
     public function me(): JsonResponse
     {
         try {

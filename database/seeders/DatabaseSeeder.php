@@ -13,15 +13,7 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Siembra los usuarios de prueba y su historial de sorteos.
-     *
-     * `demo1@thrive.test` y `demo2@thrive.test` comparten la contraseña
-     * `demo12345` y reciben entre 5 y 10 registros repartidos en varios
-     * días. Cada registro se valida con la estrategia de su módulo antes
-     * de persistirse, así los datos de demostración respetan el mismo
-     * contrato que exige `POST /api/history`.
-     */
+    /** Siembra los usuarios de prueba y su historial de demostración. */
     public function run(): void
     {
         $this->createUser('Test User', 'test@example.com', 'password');
@@ -71,8 +63,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Ocho registros de la cuenta demo 1, con al menos uno por módulo y
-     * fechas repartidas en los últimos cinco días.
+     * Ocho registros de demo 1, con los cinco módulos y varias fechas.
      *
      * @return array<int, array{module_name: string, action: string, payload: array<string, mixed>, result: array<string, mixed>, created_at: Carbon}>
      */
@@ -178,8 +169,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Seis registros de la cuenta demo 2: un sorteo por módulo y una tirada
-     * extra, con fechas en tres días distintos.
+     * Seis registros de demo 2, con los cinco módulos y varias fechas.
      *
      * @return array<int, array{module_name: string, action: string, payload: array<string, mixed>, result: array<string, mixed>, created_at: Carbon}>
      */

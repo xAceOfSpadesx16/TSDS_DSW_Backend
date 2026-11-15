@@ -4,23 +4,10 @@ namespace App\Modules\History\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Validación del payload de creación de un registro de historial.
- *
- * Reglas:
- *   - user_id NO se acepta del cliente: se ignora aunque venga, porque
- *     el user_id se asigna server-side desde el JWT (el cliente no puede
- *     "postear" historial a nombre de otro usuario).
- *   - payload y result deben ser arrays (JSON estructurado), no strings
- *     sueltos, para impedir que se persista texto arbitrario donde se
- *     espera estructura.
- */
+/** Validación del alta de historial. */
 class CreateRequest extends FormRequest
 {
-    /**
-     * La autorización la gestiona el middleware `auth:api` en la ruta.
-     * Aquí retornamos true porque ya llegamos autenticados.
-     */
+    /** La ruta ya exige `auth:api`. */
     public function authorize(): bool
     {
         return true;
@@ -39,10 +26,7 @@ class CreateRequest extends FormRequest
         ];
     }
 
-    /**
-     * Nunca propagar `user_id` desde el cuerpo: puede intentar
-     * impersonar a otros usuarios. Se descarta explícitamente.
-     */
+    /** Descarta `user_id` del cuerpo para evitar suplantación. */
     protected function prepareForValidation(): void
     {
         $this->request->remove('user_id');

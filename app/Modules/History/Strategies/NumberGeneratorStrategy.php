@@ -4,35 +4,19 @@ namespace App\Modules\History\Strategies;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 
-/**
- * Estrategia de validación para el módulo de Generador de Números.
- *
- * Shape esperado (alineado con `DiceService.generateUniqueNumbers` y
- * `DiceService.generateNumbers` del frontend):
- *
- *   payload: {
- *     count:  int >= 1,                     // cuántos números generar
- *     min:    int,                          // extremo inferior del rango (inclusivo)
- *     max:    int >= min,                   // extremo superior del rango (inclusivo)
- *     unique: bool,                         // true => no repetir; false => admite repetidos
- *   }
- *
- *   result: {
- *     numbers: int[],                       // los números generados (ordenados ascendente por el frontend)
- *   }
- */
+/** Valida payload y result del generador de números. */
 class NumberGeneratorStrategy implements HistoryStrategyInterface
 {
+    /** Nombre del módulo. */
     public function moduleName(): string
     {
         return 'numbers';
     }
 
+    /** Valida el shape del módulo. */
     public function validate(array $payload, array $result): void
     {
         $errors = [];
-
-        // --- payload ---
         if (! array_key_exists('count', $payload)) {
             $errors['payload.count'] = ['El campo "count" es obligatorio.'];
         } elseif (! is_int($payload['count']) || $payload['count'] < 1) {
@@ -62,8 +46,6 @@ class NumberGeneratorStrategy implements HistoryStrategyInterface
         } elseif (! is_bool($payload['unique'])) {
             $errors['payload.unique'] = ['El campo "unique" debe ser un booleano.'];
         }
-
-        // --- result ---
         if (! array_key_exists('numbers', $result)) {
             $errors['result.numbers'] = ['El campo "numbers" es obligatorio.'];
         } elseif (! is_array($result['numbers'])) {

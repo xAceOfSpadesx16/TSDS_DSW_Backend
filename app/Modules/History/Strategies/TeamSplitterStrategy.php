@@ -4,38 +4,21 @@ namespace App\Modules\History\Strategies;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 
-/**
- * Estrategia de validación para el módulo de Creador de Equipos.
- *
- * Shape esperado (alineado con `TeamSplitterService.split` /
- * `splitBySize` y la UI que elige modo "count" o "size"):
- *
- *   payload: {
- *     participants: string[],                          // nombres de los jugadores
- *     mode:         "count" | "size",                  // modo de partición
- *     value:        int >= 1,                          // cantidad de equipos (count) o tamaño (size)
- *     exclusions?:  string[][],                        // pares [a,b] que no pueden compartir equipo
- *   }
- *
- *   result: {
- *     teams:  string[][],                              // equipos formados (multidimensional)
- *     colors: string[],                                // color asignado por equipo (uno por sub-array de teams)
- *   }
- */
+/** Valida payload y result del generador de equipos. */
 class TeamSplitterStrategy implements HistoryStrategyInterface
 {
     private const ALLOWED_MODES = ['count', 'size'];
 
+    /** Nombre del módulo. */
     public function moduleName(): string
     {
         return 'teams';
     }
 
+    /** Valida el shape del módulo. */
     public function validate(array $payload, array $result): void
     {
         $errors = [];
-
-        // --- payload.participants ---
         if (! array_key_exists('participants', $payload)) {
             $errors['payload.participants'] = ['El campo "participants" es obligatorio.'];
         } elseif (! is_array($payload['participants']) || $payload['participants'] === []) {
@@ -47,8 +30,6 @@ class TeamSplitterStrategy implements HistoryStrategyInterface
                 }
             }
         }
-
-        // --- payload.mode ---
         if (! array_key_exists('mode', $payload)) {
             $errors['payload.mode'] = ['El campo "mode" es obligatorio.'];
         } elseif (! is_string($payload['mode']) || ! in_array($payload['mode'], self::ALLOWED_MODES, true)) {
@@ -56,15 +37,11 @@ class TeamSplitterStrategy implements HistoryStrategyInterface
                 sprintf('El campo "mode" debe ser uno de: %s.', implode(', ', self::ALLOWED_MODES)),
             ];
         }
-
-        // --- payload.value ---
         if (! array_key_exists('value', $payload)) {
             $errors['payload.value'] = ['El campo "value" es obligatorio.'];
         } elseif (! is_int($payload['value']) || $payload['value'] < 1) {
             $errors['payload.value'] = ['El campo "value" debe ser un entero >= 1.'];
         }
-
-        // --- payload.exclusions (opcional) ---
         if (array_key_exists('exclusions', $payload)) {
             if (! is_array($payload['exclusions'])) {
                 $errors['payload.exclusions'] = ['El campo "exclusions" debe ser un arreglo.'];
@@ -82,8 +59,6 @@ class TeamSplitterStrategy implements HistoryStrategyInterface
                 }
             }
         }
-
-        // --- result.teams ---
         if (! array_key_exists('teams', $result)) {
             $errors['result.teams'] = ['El campo "teams" es obligatorio.'];
         } elseif (! is_array($result['teams']) || $result['teams'] === []) {
@@ -101,8 +76,6 @@ class TeamSplitterStrategy implements HistoryStrategyInterface
                 }
             }
         }
-
-        // --- result.colors ---
         if (! array_key_exists('colors', $result)) {
             $errors['result.colors'] = ['El campo "colors" es obligatorio.'];
         } elseif (! is_array($result['colors'])) {

@@ -4,38 +4,19 @@ namespace App\Modules\History\Strategies;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 
-/**
- * Estrategia de validación para el módulo de Dados.
- *
- * Shape esperado (alineado con `DiceService.rollDice` y
- * `DiceService.rollMultiple` del frontend):
- *
- *   payload: {
- *     sides:    int >= 2,                   // caras del dado
- *     modifier: int,                        // modificador (+/-) aplicado al total
- *     count?:   int >= 1,                   // cantidad de dados (default 1)
- *     formula?: string,                     // notación RPG (ej. "2d6+3") opcional
- *   }
- *
- *   result: {
- *     rolls:    int[],                      // una entrada por dado tirado
- *     total:    int,                        // suma de rolls + modifier
- *     modifier: int,                        // eco del modificador (redundancia útil para auditoría)
- *     formula?: string,                     // eco opcional de la fórmula RPG
- *   }
- */
+/** Valida payload y result del módulo de dados. */
 class DiceRollerStrategy implements HistoryStrategyInterface
 {
+    /** Nombre del módulo. */
     public function moduleName(): string
     {
         return 'dice';
     }
 
+    /** Valida el shape del módulo. */
     public function validate(array $payload, array $result): void
     {
         $errors = [];
-
-        // --- payload ---
         if (! array_key_exists('sides', $payload)) {
             $errors['payload.sides'] = ['El campo "sides" es obligatorio.'];
         } elseif (! is_int($payload['sides']) || $payload['sides'] < 2) {
@@ -57,8 +38,6 @@ class DiceRollerStrategy implements HistoryStrategyInterface
         if (array_key_exists('formula', $payload) && ! is_string($payload['formula'])) {
             $errors['payload.formula'] = ['El campo "formula" debe ser un string.'];
         }
-
-        // --- result ---
         if (! array_key_exists('rolls', $result)) {
             $errors['result.rolls'] = ['El campo "rolls" es obligatorio.'];
         } elseif (! is_array($result['rolls']) || $result['rolls'] === []) {

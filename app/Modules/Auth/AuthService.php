@@ -7,19 +7,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-/**
- * Servicio de autenticación stateless con JWT.
- *
- * Esta clase concentra toda la lógica de negocio del módulo Auth
- * (registro, login, logout, me) para que el controlador quede como
- * una capa delgada de delegación. Las dependencias (Hash, JWTAuth)
- * se acceden vía Facades, lo cual es desacoplable en tests con
- * `Auth::shouldUse()` y mockeos.
- */
+/** Registro, login, refresh, logout y usuario actual con JWT. */
 class AuthService
 {
     /**
-     * Crea un nuevo usuario y emite su JWT inicial.
+     * Crea un usuario y emite su token.
      *
      * @param  array{name: string, email: string, password: string}  $data
      * @return array{user: User, token: string, token_type: string, expires_in: int}
@@ -38,11 +30,10 @@ class AuthService
     }
 
     /**
-     * Autentica credenciales y emite JWT.
+     * Autentica credenciales; `null` si son inválidas.
      *
      * @param  array{email: string, password: string}  $credentials
      * @return array{user: User, token: string, token_type: string, expires_in: int}|null
-     *         Retorna null cuando las credenciales son inválidas.
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
      */
@@ -58,16 +49,9 @@ class AuthService
     }
 
     /**
-     * Renueva el token actual dentro de la ventana `refresh_ttl`.
-     *
-     * A diferencia de `login()`, no usa `attempt()`: el token puede venir ya
-     * vencido y lo que importa es que siga dentro de la ventana de refresh.
-     * El token viejo queda en la blacklist (si está activa) porque
-     * `refresh()` lo invalida por dentro.
+     * Renueva el token dentro de la ventana `refresh_ttl`.
      *
      * @return array{user: User, token: string, token_type: string, expires_in: int}|null
-     *         `null` cuando no hay token, no es válido, o venció fuera de la
-     *         ventana de refresh.
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
      */
@@ -81,8 +65,7 @@ class AuthService
 
         $newToken = JWTAuth::refresh();
 
-        // Tras `refresh()` el guard no queda autenticado: se resuelve el
-        // usuario a partir del token nuevo, que ya es válido.
+        // `refresh()` no autentica el guard: se resuelve el usuario con el token nuevo.
         $user = Auth::guard('api')->setToken($newToken)->user();
 
         if (! $user) {
@@ -93,7 +76,7 @@ class AuthService
     }
 
     /**
-     * Invalida el token actual (logout real).
+     * Invalida el token actual.
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
      */
@@ -103,7 +86,7 @@ class AuthService
     }
 
     /**
-     * Retorna el usuario autenticado por el token Bearer.
+     * Usuario autenticado por el token Bearer.
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
      * @throws \Tymon\JWTAuth\Exceptions\TokenInvalidException
@@ -114,11 +97,7 @@ class AuthService
     }
 
     /**
-     * Empaqueta el token con metadatos estándar del contrato OAuth2/JWT.
-     *
-     * Acepta el User explícitamente para que register() no dependa de
-     * que el guard ya tenga la sesión hidratada (fromUser() emite
-     * token sin autenticar el guard).
+     * Empaqueta el token con los metadatos del contrato.
      *
      * @return array{user: User, token: string, token_type: string, expires_in: int}
      */

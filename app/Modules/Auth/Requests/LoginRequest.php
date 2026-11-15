@@ -4,22 +4,16 @@ namespace App\Modules\Auth\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/** Validación del login. */
 class LoginRequest extends FormRequest
 {
-    /**
-     * Login es público, no requiere autenticación previa.
-     */
+    /** Login es público. */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Reglas de validación del login.
-     * `email` valida formato pero NO unicidad (es login, no registro).
-     * `password` se mantiene opaca a validación de formato para no
-     * exponer al cliente pistas sobre la política interna.
-     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array

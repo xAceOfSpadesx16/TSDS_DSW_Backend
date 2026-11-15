@@ -4,23 +4,16 @@ namespace App\Modules\Auth\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/** Validación del registro. */
 class RegisterRequest extends FormRequest
 {
-    /**
-     * Cualquier cliente puede solicitar el registro.
-     * El control de duplicados lo hace la regla `unique` sobre users.email.
-     */
+    /** Cualquier cliente puede registrarse. */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Reglas de validación del registro.
-     *
-     * `email` se valida como formato y se asegura unicidad contra la tabla users.
-     * `password` exige mínimo 8 caracteres (alineado con políticas modernas).
-     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array

@@ -4,36 +4,19 @@ namespace App\Modules\History\Strategies;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 
-/**
- * Estrategia de validación para el módulo de Sorteo Ponderado.
- *
- * Shape esperado (alineado con `WeightedDrawService.draw` del frontend):
- *
- *   payload: {
- *     entries:     [                            // participantes con sus pesos
- *       { name: string, weight: int|float },
- *       ...
- *     ],
- *     autoRemove?: bool,                        // si true, el ganador se quita de la lista
- *   }
- *
- *   result: {
- *     winner:      { name: string, weight: int|float },
- *     probability: int|float,                   // porcentaje redondeado por el frontend
- *   }
- */
+/** Valida payload y result del sorteo ponderado. */
 class WeightedDrawStrategy implements HistoryStrategyInterface
 {
+    /** Nombre del módulo. */
     public function moduleName(): string
     {
         return 'weighted';
     }
 
+    /** Valida el shape del módulo. */
     public function validate(array $payload, array $result): void
     {
         $errors = [];
-
-        // --- payload.entries ---
         if (! array_key_exists('entries', $payload)) {
             $errors['payload.entries'] = ['El campo "entries" es obligatorio.'];
         } elseif (! is_array($payload['entries']) || $payload['entries'] === []) {
@@ -56,13 +39,9 @@ class WeightedDrawStrategy implements HistoryStrategyInterface
                 }
             }
         }
-
-        // --- payload.autoRemove (opcional) ---
         if (array_key_exists('autoRemove', $payload) && ! is_bool($payload['autoRemove'])) {
             $errors['payload.autoRemove'] = ['El campo "autoRemove" debe ser un booleano.'];
         }
-
-        // --- result.winner ---
         if (! array_key_exists('winner', $result)) {
             $errors['result.winner'] = ['El campo "winner" es obligatorio.'];
         } elseif (! is_array($result['winner'])) {
@@ -77,8 +56,6 @@ class WeightedDrawStrategy implements HistoryStrategyInterface
                 $errors['result.winner.weight'] = ['"winner.weight" debe ser numérico (int o float).'];
             }
         }
-
-        // --- result.probability ---
         if (! array_key_exists('probability', $result)) {
             $errors['result.probability'] = ['El campo "probability" es obligatorio.'];
         } elseif (! is_int($result['probability']) && ! is_float($result['probability'])) {

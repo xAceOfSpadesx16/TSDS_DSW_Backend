@@ -5,13 +5,7 @@ namespace App\Modules\History\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Serializador estándar del registro de historial.
- *
- * Expone el UUID `id` (no el autoincrement legacy) y los timestamps
- * para que el frontend pueda mostrar "hace X minutos" sin pedir más
- * requests.
- */
+/** Serializa un registro de historial. */
 class HistoryRecordResource extends JsonResource
 {
     /**

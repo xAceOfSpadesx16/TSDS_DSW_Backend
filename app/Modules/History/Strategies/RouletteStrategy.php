@@ -4,35 +4,19 @@ namespace App\Modules\History\Strategies;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 
-/**
- * Estrategia de validación para el módulo de Ruleta.
- *
- * Shape esperado (alineado con `RouletteService.calculateSegments` y
- * el flujo de selección de ganador del frontend):
- *
- *   payload: {
- *     options: [                            // segmentos que el usuario configuró
- *       { label: string, color: string },
- *       ...
- *     ]
- *   }
- *
- *   result: {
- *     winner: { label: string, color: string }   // opción ganadora
- *   }
- */
+/** Valida payload y result de la ruleta. */
 class RouletteStrategy implements HistoryStrategyInterface
 {
+    /** Nombre del módulo. */
     public function moduleName(): string
     {
         return 'roulette';
     }
 
+    /** Valida el shape del módulo. */
     public function validate(array $payload, array $result): void
     {
         $errors = [];
-
-        // --- payload ---
         if (! array_key_exists('options', $payload)) {
             $errors['payload.options'] = ['El campo "options" es obligatorio.'];
         } elseif (! is_array($payload['options']) || $payload['options'] === []) {
@@ -51,8 +35,6 @@ class RouletteStrategy implements HistoryStrategyInterface
                 }
             }
         }
-
-        // --- result ---
         if (! array_key_exists('winner', $result)) {
             $errors['result.winner'] = ['El campo "winner" es obligatorio.'];
         } elseif (! is_array($result['winner'])) {

@@ -10,19 +10,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-/**
- * Controlador delgado del historial.
- * Toda la lógica vive en {@see HistoryService}.
- */
+/** Endpoints del historial; la lógica vive en {@see HistoryService}. */
 class HistoryController extends Controller
 {
     public function __construct(private readonly HistoryService $history)
     {
     }
 
-    /**
-     * POST /api/history  (auth:api)
-     */
+    /** POST /api/history. */
     public function store(CreateRequest $request): JsonResponse
     {
         /** @var User $user */
@@ -34,13 +29,7 @@ class HistoryController extends Controller
         ], 201);
     }
 
-    /**
-     * GET /api/histories  (auth:api)
-     *
-     * Query params:
-     *   - page     (int, default 1)  página a recuperar
-     *   - per_page (int, default 20) elementos por página (1-100)
-     */
+    /** GET /api/histories con paginación. */
     public function index(Request $request): JsonResponse
     {
         $perPage = $this->resolvePerPage($request);
@@ -60,12 +49,7 @@ class HistoryController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/history/{id}  (auth:api)
-     *
-     * Responde 204 si borró el registro y 404 si no existe o pertenece a
-     * otro usuario (ver {@see HistoryService::deleteForUser}).
-     */
+    /** DELETE /api/history/{id}: 204 o 404. */
     public function destroy(Request $request, string $id): JsonResponse|Response
     {
         /** @var User $user */
@@ -80,11 +64,7 @@ class HistoryController extends Controller
         return response()->noContent();
     }
 
-    /**
-     * DELETE /api/histories  (auth:api)
-     *
-     * Borra todos los registros del usuario autenticado.
-     */
+    /** DELETE /api/histories. */
     public function clear(Request $request): Response
     {
         /** @var User $user */
@@ -95,10 +75,7 @@ class HistoryController extends Controller
         return response()->noContent();
     }
 
-    /**
-     * Resuelve y sanea `per_page` desde el query string.
-     * Rango válido: 1..100. Default: 20. Cualquier valor inválido cae al default.
-     */
+    /** Sanea `per_page` al rango 1..100 (default 20). */
     private function resolvePerPage(Request $request): int
     {
         $raw = $request->query('per_page', 20);

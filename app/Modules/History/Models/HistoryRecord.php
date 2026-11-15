@@ -8,14 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Registro del historial enviado por el cliente.
- *
- * El cliente calcula el sorteo en el frontend (dados, ruleta, equipos,
- * sorteos ponderados) y persiste aquí los parámetros de entrada y el
- * resultado, asociándolo opcionalmente al usuario autenticado por JWT.
- *
- * El identificador primario es UUID v4 para evitar enumeración y
- * facilitar la escalabilidad horizontal (sin autoincrement).
+ * Registro de un sorteo persistido.
  *
  * @property string $id
  * @property int|null $user_id
@@ -31,9 +24,6 @@ class HistoryRecord extends Model
     protected $table = 'history_records';
 
     /**
-     * Asignación masiva: el id se omite porque lo gestiona HasUuids,
-     * y los timestamps los llena Eloquent automáticamente.
-     *
      * @var list<string>
      */
     protected $fillable = [
@@ -45,8 +35,6 @@ class HistoryRecord extends Model
     ];
 
     /**
-     * Casts: payload y result son JSON estructurado (arrays asociativos).
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -57,9 +45,7 @@ class HistoryRecord extends Model
         ];
     }
 
-    /**
-     * Relación con el usuario dueño del registro (si está autenticado).
-     */
+    /** Usuario dueño del registro. */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
