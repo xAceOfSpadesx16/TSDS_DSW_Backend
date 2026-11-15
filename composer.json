@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "thrive/dsw-backend",
     "type": "project",
-    "description": "Thrive Randomizer - DSW Backend API (Laravel 13, JWT auth, history persistence, legal disclaimers)",
+    "description": "Thrive Randomizer - DSW Backend API (Laravel 12, JWT auth, history persistence, legal disclaimers)",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
@@ -39,6 +39,8 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
+            "@php artisan jwt:secret --force",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --force",
             "npm install --ignore-scripts",
             "npm run build"
