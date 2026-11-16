@@ -63,6 +63,37 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors(['email']);
     }
 
+    /**
+     * La validación en español cubre correo duplicado y contraseña corta.
+     */
+    public function test_register_validation_messages_are_in_spanish(): void
+    {
+        $this->app->setLocale('es');
+
+        User::create([
+            'name' => 'Existing',
+            'email' => 'ada@example.com',
+            'password' => 'whatever',
+        ]);
+
+        $response = $this->postJson('/api/auth/register', [
+            'name' => 'Duplicate',
+            'email' => 'ada@example.com',
+            'password' => '12345',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email', 'password']);
+        $this->assertSame(
+            'El valor del campo correo electrónico ya está en uso.',
+            $response->json('errors.email.0'),
+        );
+        $this->assertSame(
+            'El campo contraseña debe tener al menos 8 caracteres.',
+            $response->json('errors.password.0'),
+        );
+    }
+
     public function test_login_returns_jwt_for_valid_credentials(): void
     {
         User::create([
