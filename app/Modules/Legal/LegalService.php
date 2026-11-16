@@ -13,7 +13,7 @@ class LegalService
     public function disclaimer(): array
     {
         return [
-            'title' => 'Disclaimer - Thrive Randomizer',
+            'title' => 'Aviso legal - Thrive Randomizer',
             'version' => '1.0.0',
             'sections' => [
                 [
