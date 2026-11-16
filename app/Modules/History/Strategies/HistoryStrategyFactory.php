@@ -18,11 +18,7 @@ class HistoryStrategyFactory
         'weighted' => WeightedDrawStrategy::class,
     ];
 
-    /**
-     * Resuelve la estrategia del módulo.
-     *
-     * @throws UnsupportedModuleException
-     */
+    /** Resuelve la estrategia del módulo. */
     public function make(string $moduleName): HistoryStrategyInterface
     {
         if (! isset(self::STRATEGIES[$moduleName])) {
@@ -35,11 +31,7 @@ class HistoryStrategyFactory
         return $strategy;
     }
 
-    /**
-     * Módulos soportados.
-     *
-     * @return array<int, string>
-     */
+    /** Módulos soportados. */
     public function supportedModules(): array
     {
         return array_keys(self::STRATEGIES);

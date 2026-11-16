@@ -4,7 +4,7 @@ namespace Tests\Unit\History;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 use App\Modules\History\Strategies\NumberGeneratorStrategy;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class NumberGeneratorStrategyTest extends TestCase
 {
@@ -90,6 +90,43 @@ class NumberGeneratorStrategyTest extends TestCase
             $this->fail('Expected InvalidHistoryPayloadException');
         } catch (InvalidHistoryPayloadException $e) {
             $this->assertArrayHasKey('result.numbers.0', $e->errors());
+        }
+    }
+
+    public function test_validate_reports_only_min_key_when_comparison_cannot_run(): void
+    {
+        $cases = [
+            ['count' => 1, 'max' => -5, 'unique' => false],
+            ['count' => 1, 'min' => '1', 'max' => 0, 'unique' => false],
+        ];
+
+        foreach ($cases as $payload) {
+            try {
+                $this->strategy->validate($payload, ['numbers' => []]);
+                $this->fail('Expected InvalidHistoryPayloadException');
+            } catch (InvalidHistoryPayloadException $e) {
+                $this->assertSame(['payload.min'], array_keys($e->errors()));
+            }
+        }
+    }
+
+    public function test_validate_rejects_strict_types(): void
+    {
+        $cases = [
+            [['count' => '5', 'min' => 1, 'max' => 90, 'unique' => true], ['numbers' => [3]], 'payload.count'],
+            [['count' => 1, 'min' => '1', 'max' => 90, 'unique' => true], ['numbers' => [3]], 'payload.min'],
+            [['count' => 1, 'min' => 1, 'max' => '90', 'unique' => true], ['numbers' => [3]], 'payload.max'],
+            [['count' => 1, 'min' => 1, 'max' => 90, 'unique' => 'true'], ['numbers' => [3]], 'payload.unique'],
+            [['count' => 1, 'min' => 1, 'max' => 90, 'unique' => true], ['numbers' => ['3']], 'result.numbers.0'],
+        ];
+
+        foreach ($cases as [$payload, $result, $key]) {
+            try {
+                $this->strategy->validate($payload, $result);
+                $this->fail("Expected InvalidHistoryPayloadException for {$key}");
+            } catch (InvalidHistoryPayloadException $e) {
+                $this->assertArrayHasKey($key, $e->errors());
+            }
         }
     }
 }

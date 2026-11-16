@@ -4,7 +4,7 @@ namespace Tests\Unit\History;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 use App\Modules\History\Strategies\WeightedDrawStrategy;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class WeightedDrawStrategyTest extends TestCase
 {
@@ -128,6 +128,88 @@ class WeightedDrawStrategyTest extends TestCase
             $this->fail('Expected InvalidHistoryPayloadException');
         } catch (InvalidHistoryPayloadException $e) {
             $this->assertArrayHasKey('payload.autoRemove', $e->errors());
+        }
+    }
+
+    public function test_validate_rejects_strict_types_and_empty_arrays(): void
+    {
+        $cases = [
+            [['entries' => [['name' => 'Ana', 'weight' => '5']]], ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => 100], 'payload.entries.0.weight'],
+            [['entries' => [['name' => 'Ana', 'weight' => 5]], 'autoRemove' => 'true'], ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => 100], 'payload.autoRemove'],
+            [['entries' => []], ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => 100], 'payload.entries'],
+            [['entries' => [['name' => 'Ana', 'weight' => 5]]], ['winner' => ['name' => 'Ana', 'weight' => '5'], 'probability' => 100], 'result.winner.weight'],
+            [['entries' => [['name' => 'Ana', 'weight' => 5]]], ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => '100'], 'result.probability'],
+        ];
+
+        foreach ($cases as [$payload, $result, $key]) {
+            try {
+                $this->strategy->validate($payload, $result);
+                $this->fail("Expected InvalidHistoryPayloadException for {$key}");
+            } catch (InvalidHistoryPayloadException $e) {
+                $this->assertArrayHasKey($key, $e->errors());
+            }
+        }
+    }
+
+    public function test_validate_reports_only_winner_key_when_missing(): void
+    {
+        try {
+            $this->strategy->validate(
+                ['entries' => [['name' => 'Ana', 'weight' => 5]]],
+                ['probability' => 100],
+            );
+            $this->fail('Expected InvalidHistoryPayloadException');
+        } catch (InvalidHistoryPayloadException $e) {
+            $this->assertSame(['result.winner'], array_keys($e->errors()));
+        }
+    }
+
+    public function test_validate_reports_nested_keys_for_empty_winner(): void
+    {
+        try {
+            $this->strategy->validate(
+                ['entries' => [['name' => 'Ana', 'weight' => 5]]],
+                ['winner' => [], 'probability' => 100],
+            );
+            $this->fail('Expected InvalidHistoryPayloadException');
+        } catch (InvalidHistoryPayloadException $e) {
+            $keys = array_keys($e->errors());
+            sort($keys);
+            $this->assertSame(
+                ['result.winner.name', 'result.winner.weight'],
+                $keys,
+            );
+        }
+    }
+
+    public function test_validate_reports_only_entry_key_for_scalar_entry(): void
+    {
+        try {
+            $this->strategy->validate(
+                ['entries' => ['x']],
+                ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => 100],
+            );
+            $this->fail('Expected InvalidHistoryPayloadException');
+        } catch (InvalidHistoryPayloadException $e) {
+            $this->assertSame(['payload.entries.0'], array_keys($e->errors()));
+        }
+    }
+
+    public function test_validate_reports_only_name_and_weight_for_empty_entry(): void
+    {
+        try {
+            $this->strategy->validate(
+                ['entries' => [[]]],
+                ['winner' => ['name' => 'Ana', 'weight' => 5], 'probability' => 100],
+            );
+            $this->fail('Expected InvalidHistoryPayloadException');
+        } catch (InvalidHistoryPayloadException $e) {
+            $keys = array_keys($e->errors());
+            sort($keys);
+            $this->assertSame(
+                ['payload.entries.0.name', 'payload.entries.0.weight'],
+                $keys,
+            );
         }
     }
 }

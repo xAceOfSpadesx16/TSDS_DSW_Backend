@@ -4,7 +4,7 @@ namespace Tests\Unit\History;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 use App\Modules\History\Strategies\DiceRollerStrategy;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * Cubre DiceRollerStrategy: shape válido de un dado simple y de una
@@ -121,6 +121,26 @@ class DiceRollerStrategyTest extends TestCase
             $this->fail('Expected InvalidHistoryPayloadException');
         } catch (InvalidHistoryPayloadException $e) {
             $this->assertArrayHasKey('result.modifier', $e->errors());
+        }
+    }
+
+    public function test_validate_rejects_strict_types_and_empty_arrays(): void
+    {
+        $cases = [
+            [['sides' => '6', 'modifier' => 0], ['rolls' => [4], 'modifier' => 0, 'total' => 4], 'payload.sides'],
+            [['sides' => 6, 'modifier' => '0'], ['rolls' => [4], 'modifier' => 0, 'total' => 4], 'payload.modifier'],
+            [['sides' => 6, 'modifier' => 0, 'count' => '2'], ['rolls' => [4], 'modifier' => 0, 'total' => 4], 'payload.count'],
+            [['sides' => 6, 'modifier' => 0], ['rolls' => ['4'], 'modifier' => 0, 'total' => 4], 'result.rolls.0'],
+            [['sides' => 6, 'modifier' => 0], ['rolls' => [], 'modifier' => 0, 'total' => 4], 'result.rolls'],
+        ];
+
+        foreach ($cases as [$payload, $result, $key]) {
+            try {
+                $this->strategy->validate($payload, $result);
+                $this->fail("Expected InvalidHistoryPayloadException for {$key}");
+            } catch (InvalidHistoryPayloadException $e) {
+                $this->assertArrayHasKey($key, $e->errors());
+            }
         }
     }
 

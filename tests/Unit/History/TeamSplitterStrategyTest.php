@@ -4,7 +4,7 @@ namespace Tests\Unit\History;
 
 use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
 use App\Modules\History\Strategies\TeamSplitterStrategy;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class TeamSplitterStrategyTest extends TestCase
 {
@@ -132,6 +132,43 @@ class TeamSplitterStrategyTest extends TestCase
             $this->fail('Expected InvalidHistoryPayloadException');
         } catch (InvalidHistoryPayloadException $e) {
             $this->assertArrayHasKey('result.colors.0', $e->errors());
+        }
+    }
+
+    public function test_validate_reports_only_exclusion_key_for_incomplete_pair(): void
+    {
+        try {
+            $this->strategy->validate(
+                [
+                    'participants' => ['Ana', 'Beto'],
+                    'mode' => 'count',
+                    'value' => 2,
+                    'exclusions' => [['']],
+                ],
+                ['teams' => [['Ana'], ['Beto']], 'colors' => ['#fff', '#000']],
+            );
+            $this->fail('Expected InvalidHistoryPayloadException');
+        } catch (InvalidHistoryPayloadException $e) {
+            $this->assertSame(['payload.exclusions.0'], array_keys($e->errors()));
+        }
+    }
+
+    public function test_validate_rejects_strict_types_and_empty_arrays(): void
+    {
+        $cases = [
+            [['participants' => ['Ana'], 'mode' => 'count', 'value' => '1'], ['teams' => [['Ana']], 'colors' => ['#fff']], 'payload.value'],
+            [['participants' => [], 'mode' => 'count', 'value' => 1], ['teams' => [['Ana']], 'colors' => ['#fff']], 'payload.participants'],
+            [['participants' => ['Ana'], 'mode' => 'count', 'value' => 1], ['teams' => [], 'colors' => ['#fff']], 'result.teams'],
+            [['participants' => ['Ana'], 'mode' => 'count', 'value' => 1], ['teams' => [['Ana']], 'colors' => ['']], 'result.colors.0'],
+        ];
+
+        foreach ($cases as [$payload, $result, $key]) {
+            try {
+                $this->strategy->validate($payload, $result);
+                $this->fail("Expected InvalidHistoryPayloadException for {$key}");
+            } catch (InvalidHistoryPayloadException $e) {
+                $this->assertArrayHasKey($key, $e->errors());
+            }
         }
     }
 }

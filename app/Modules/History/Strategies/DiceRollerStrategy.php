@@ -2,10 +2,8 @@
 
 namespace App\Modules\History\Strategies;
 
-use App\Modules\History\Exceptions\InvalidHistoryPayloadException;
-
 /** Valida payload y result del módulo de dados. */
-class DiceRollerStrategy implements HistoryStrategyInterface
+class DiceRollerStrategy extends RuleBasedHistoryStrategy
 {
     /** Nombre del módulo. */
     public function moduleName(): string
@@ -13,60 +11,18 @@ class DiceRollerStrategy implements HistoryStrategyInterface
         return 'dice';
     }
 
-    /** Valida el shape del módulo. */
-    public function validate(array $payload, array $result): void
+    /** Reglas de validación del módulo de dados. */
+    protected function rules(): array
     {
-        $errors = [];
-        if (! array_key_exists('sides', $payload)) {
-            $errors['payload.sides'] = ['El campo "sides" es obligatorio.'];
-        } elseif (! is_int($payload['sides']) || $payload['sides'] < 2) {
-            $errors['payload.sides'] = ['El campo "sides" debe ser un entero >= 2.'];
-        }
-
-        if (! array_key_exists('modifier', $payload)) {
-            $errors['payload.modifier'] = ['El campo "modifier" es obligatorio.'];
-        } elseif (! is_int($payload['modifier'])) {
-            $errors['payload.modifier'] = ['El campo "modifier" debe ser un entero.'];
-        }
-
-        if (array_key_exists('count', $payload)) {
-            if (! is_int($payload['count']) || $payload['count'] < 1) {
-                $errors['payload.count'] = ['El campo "count" debe ser un entero >= 1.'];
-            }
-        }
-
-        if (array_key_exists('formula', $payload) && ! is_string($payload['formula'])) {
-            $errors['payload.formula'] = ['El campo "formula" debe ser un string.'];
-        }
-        if (! array_key_exists('rolls', $result)) {
-            $errors['result.rolls'] = ['El campo "rolls" es obligatorio.'];
-        } elseif (! is_array($result['rolls']) || $result['rolls'] === []) {
-            $errors['result.rolls'] = ['El campo "rolls" debe ser un arreglo no vacío.'];
-        } else {
-            foreach ($result['rolls'] as $i => $roll) {
-                if (! is_int($roll)) {
-                    $errors["result.rolls.$i"] = ['Cada elemento de "rolls" debe ser un entero.'];
-                }
-            }
-        }
-
-        if (! array_key_exists('total', $result)) {
-            $errors['result.total'] = ['El campo "total" es obligatorio.'];
-        } elseif (! is_int($result['total'])) {
-            $errors['result.total'] = ['El campo "total" debe ser un entero.'];
-        }
-
-        if (! array_key_exists('modifier', $result)) {
-            $errors['result.modifier'] = ['El campo "modifier" es obligatorio en el resultado.'];
-        } elseif (! is_int($result['modifier'])) {
-            $errors['result.modifier'] = ['El campo "result.modifier" debe ser un entero.'];
-        }
-
-        if ($errors !== []) {
-            throw new InvalidHistoryPayloadException(
-                $errors,
-                'El payload o el resultado del módulo "dice" no cumplen con el shape esperado.',
-            );
-        }
+        return [
+            'payload.sides' => ['required', 'integer:strict', 'min:2'],
+            'payload.modifier' => ['required', 'integer:strict'],
+            'payload.count' => ['sometimes', 'required', 'integer:strict', 'min:1'],
+            'payload.formula' => ['sometimes', 'string'],
+            'result.rolls' => ['required', 'array', 'min:1'],
+            'result.rolls.*' => ['integer:strict'],
+            'result.total' => ['required', 'integer:strict'],
+            'result.modifier' => ['required', 'integer:strict'],
+        ];
     }
 }
